@@ -70,7 +70,7 @@ contract SoccerBet is usingOraclize {
             if(users[msg.sender].prediction == finalResult ) {
                 uint _stake = users[msg.sender].stake;
                 uint _totalStake = money[uint(users[msg.sender].prediction)];
-                uint _amount = (_stake * totalMoney  * 9 ) / ( 100 * _totalStake); // potential integer overflow here if totalMoney > 2^128 (..so not a problem)
+                uint _amount = (_stake * totalMoney  * 90 ) / ( 100 * _totalStake); // potential integer overflow here if totalMoney > 2^128 (..so not a problem)
 
                 msg.sender.transfer(_amount);
                 users[msg.sender].stake = 0;
