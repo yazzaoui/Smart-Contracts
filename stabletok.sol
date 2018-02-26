@@ -50,6 +50,12 @@ contract StableToken is ERC20Interface,  SafeMath {
     mapping(address => uint) balances;
     mapping(address => mapping(address => uint)) allowed;
 
+    bool auctionStarted;
+    bool firstBid;
+    uint auctionedTokens;
+    uint lastBidAmount;
+    uint auctionStartDate;
+    address lastBidAddress;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -60,9 +66,39 @@ contract StableToken is ERC20Interface,  SafeMath {
         decimals = 18;
         _totalSupply = 100000000000000000000000000;
         balances[msg.sender] = _totalSupply;
+        auctionStarted = false;
         Transfer(address(0), msg.sender, _totalSupply);
     }
 
+    // ------------------------------------------------------------------------
+    // New Tokens Auction
+    // ------------------------------------------------------------------------
+
+    function startAuction() public {
+        firstBid = true;
+        auctionStartDate = now;
+    }
+
+    function bidAuction() public payable {
+        assert(auctionStarted);
+        assert(msg.value > lastBid);
+        if(firstBid){
+            firstBid = false;
+        }
+        else{
+            lastBidAddress.transfer(lastBid);
+        }
+        lastBidAmount = msg.value;
+        lastBidAddress = msg.sender;
+    }
+
+
+    function endAuction() public {
+        assert(now > auctionStartDate + 1 days);
+        assert(auctionStarted);
+        auctionStarted = false;
+        balances[lastBidAddress] = safeAdd(balances[lastBidAddress], auctionedTokens);
+    }
 
     // ------------------------------------------------------------------------
     // Total supply
@@ -148,11 +184,5 @@ contract StableToken is ERC20Interface,  SafeMath {
     }
 
 
-    // ------------------------------------------------------------------------
-    // Don't accept ETH
-    // ------------------------------------------------------------------------
-    function () public payable {
-        revert();
-    }
 
 }
